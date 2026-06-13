@@ -47,7 +47,10 @@
 - 第五次 GitHub Actions 的 SSM 命令仍在执行时超过 AWS CLI 默认 waiter 等待时长；已改为最长 6 分钟的自定义状态轮询。
 - 第六次 GitHub Actions 已完整验证测试、OIDC、ECR、SSM、EC2 镜像启动和最终日志采集。
 - RDS 主用户名和密码已确认并同步，数据库认证成功。
-- 当前唯一部署阻塞为 RDS 中尚不存在 `student_management` 数据库；等待通过 EC2 创建数据库，随后 Flyway 将自动创建业务结构。
+- 已创建 `student_management` 生产数据库，Flyway 自动迁移成功。
+- 首次完整 GitHub Actions 自动部署成功：测试、OIDC、ECR、SSM、容器健康检查和 Nginx 检查全部通过。
+- 生产后端健康检查返回服务与数据库均为 `UP`，容器仅绑定 `127.0.0.1:8000`。
+- 等待配置 `api.751905.xyz` DNS、Nginx 反向代理与 HTTPS。
 
 ## 已创建 AWS 资源
 
