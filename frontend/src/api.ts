@@ -1,4 +1,4 @@
-import type { ClassAssignment, CreateSchoolClassData, Page, SchoolClass, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
+import type { ClassAssignment, CreateSchoolClassData, Page, SchoolClass, Session, Student, StudentFormData, StudentStatus, TeacherAccount, UpdateStudentData } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '')
 const SESSION_KEY = 'student-management-session'
@@ -96,6 +96,12 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ ...data, name: data.name.trim() }),
     }, session)
+  },
+  teachers(session: Session) {
+    return request<TeacherAccount[]>('/api/accounts/teachers', {}, session)
+  },
+  classStudents(session: Session, classId: string) {
+    return request<Student[]>(`/api/classes/${classId}/students`, {}, session)
   },
   classAssignments(session: Session, studentId: number) {
     return request<ClassAssignment[]>(`/api/students/${studentId}/class-assignments`, {}, session)

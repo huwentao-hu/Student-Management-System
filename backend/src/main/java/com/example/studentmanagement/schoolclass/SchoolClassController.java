@@ -1,6 +1,7 @@
 package com.example.studentmanagement.schoolclass;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +20,7 @@ import com.example.studentmanagement.auth.AuthenticatedUser;
 import com.example.studentmanagement.auth.AuthenticationInterceptor;
 import com.example.studentmanagement.auth.UserRole;
 import com.example.studentmanagement.common.PageResponse;
+import com.example.studentmanagement.student.StudentResponse;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -30,9 +32,11 @@ import jakarta.validation.constraints.Min;
 public class SchoolClassController {
 
 	private final SchoolClassService schoolClassService;
+	private final StudentClassAssignmentService assignmentService;
 
-	public SchoolClassController(SchoolClassService schoolClassService) {
+	public SchoolClassController(SchoolClassService schoolClassService, StudentClassAssignmentService assignmentService) {
 		this.schoolClassService = schoolClassService;
+		this.assignmentService = assignmentService;
 	}
 
 	@PostMapping
@@ -50,6 +54,13 @@ public class SchoolClassController {
 			@RequestAttribute(AuthenticationInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUser user) {
 		requireStaff(user);
 		return schoolClassService.getById(id);
+	}
+
+	@GetMapping("/{id}/students")
+	public List<StudentResponse> currentStudents(@PathVariable long id,
+			@RequestAttribute(AuthenticationInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUser user) {
+		requireStaff(user);
+		return assignmentService.currentStudents(id);
 	}
 
 	@GetMapping

@@ -1,5 +1,7 @@
 package com.example.studentmanagement;
 
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
@@ -510,6 +512,53 @@ class StudentManagementApplicationTests {
 			.andExpect(status().isForbidden());
 		mockMvc.perform(get("/api/classes"))
 			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void adminListsEnabledTeachersForClassSelection() throws Exception {
+		UserAccount firstTeacher = saveAccount(UserRole.TEACHER, null);
+		UserAccount secondTeacher = saveAccount(UserRole.TEACHER, null);
+		saveAccount(UserRole.ADMIN, null);
+
+		mockMvc.perform(get("/api/accounts/teachers").header("Authorization", bearer(adminToken())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*].id", hasItems(firstTeacher.getId().intValue(), secondTeacher.getId().intValue())))
+			.andExpect(jsonPath("$[*].role", everyItem(is("TEACHER"))))
+			.andExpect(jsonPath("$[*].enabled", everyItem(is(true))));
+
+		mockMvc.perform(get("/api/accounts/teachers")
+				.header("Authorization", bearer(tokenForRole(UserRole.TEACHER, null))))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void staffListsOnlyCurrentStudentsInClassRoster() throws Exception {
+		UserAccount teacher = saveAccount(UserRole.TEACHER, null);
+		SchoolClass schoolClass = schoolClassRepository.save(new SchoolClass("Roster " + shortId(), 2026, teacher));
+		Student currentStudent = studentRepository.save(new Student("ROSTER-CURRENT-" + shortId(), "Current Student",
+				null, null, null, null, null));
+		Student formerStudent = studentRepository.save(new Student("ROSTER-FORMER-" + shortId(), "Former Student",
+				null, null, null, null, null));
+		studentClassAssignmentRepository.save(new StudentClassAssignment(currentStudent, schoolClass,
+				LocalDate.of(2026, 9, 1)));
+		StudentClassAssignment formerAssignment = new StudentClassAssignment(formerStudent, schoolClass,
+				LocalDate.of(2026, 9, 1));
+		formerAssignment.close(LocalDate.of(2027, 1, 31));
+		studentClassAssignmentRepository.save(formerAssignment);
+		String teacherToken = authService.login(new LoginRequest(teacher.getUsername(), "StrongPassword123!")).token();
+
+		mockMvc.perform(get("/api/classes/{id}/students", schoolClass.getId())
+				.header("Authorization", bearer(teacherToken)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$", hasSize(1)))
+			.andExpect(jsonPath("$[0].id", is(currentStudent.getId().intValue())));
+
+		mockMvc.perform(get("/api/classes/{id}/students", schoolClass.getId())
+				.header("Authorization", bearer(tokenForRole(UserRole.STUDENT, currentStudent))))
+			.andExpect(status().isForbidden());
+		mockMvc.perform(get("/api/classes/{id}/students", Long.MAX_VALUE)
+				.header("Authorization", bearer(adminToken())))
+			.andExpect(status().isNotFound());
 	}
 
 	@Test

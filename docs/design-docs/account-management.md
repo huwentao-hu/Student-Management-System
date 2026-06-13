@@ -1,7 +1,7 @@
 # 账号管理设计
 
 状态：已实现  
-最后更新：2026-06-12
+最后更新：2026-06-13
 
 ## 目标
 
@@ -12,6 +12,10 @@
 `POST /api/accounts`
 
 要求携带管理员 Bearer Token。成功返回 `201 Created`。
+
+`GET /api/accounts/teachers`
+
+要求携带管理员 Bearer Token。按用户名升序返回所有已启用教师账号，用于班主任和授课教师选择。
 
 ## 请求规则
 

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, clearSession, loadSession, saveSession } from './api'
-import type { ClassAssignment, Role, SchoolClass, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
+import type { ClassAssignment, Role, SchoolClass, Session, Student, StudentFormData, StudentStatus, TeacherAccount, UpdateStudentData } from './types'
 import './App.css'
 
 const roleLabels: Record<Role, string> = { ADMIN: '管理员', TEACHER: '教师', STUDENT: '学生' }
@@ -335,8 +335,14 @@ function ClassCreate({ session }: { session: Session }) {
   const [name, setName] = useState('')
   const [entryYear, setEntryYear] = useState(new Date().getFullYear())
   const [teacherId, setTeacherId] = useState('')
+  const [teachers, setTeachers] = useState<TeacherAccount[]>([])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    api.teachers(session).then(setTeachers)
+      .catch((reason) => setError(reason instanceof Error ? reason.message : '教师列表加载失败'))
+  }, [session])
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setSaving(true); setError('')
@@ -350,7 +356,7 @@ function ClassCreate({ session }: { session: Session }) {
 
   return <>
     <section className="page-heading"><div><p className="eyebrow">新建教学组织</p><h1>新增班级</h1><p className="muted">同一入学年份内班级名称不能重复。</p></div><Link className="secondary-link" to="/classes"><ArrowLeft size={17} />返回列表</Link></section>
-    <form className="panel student-form" onSubmit={submit}><div className="form-section"><div><p className="eyebrow">班级信息</p><h2>基础资料</h2></div><div className="form-grid"><label className="wide">班级名称 <span>*</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required /></label><label>入学年份 <span>*</span><input type="number" min="1900" max="2200" value={entryYear} onChange={(e) => setEntryYear(Number(e.target.value))} required /></label><label>班主任教师账号 ID <span>*</span><input type="number" min="1" value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required /><small className="field-help">当前后端尚无教师列表接口，请填写已启用教师账号 ID。</small></label></div></div>{error && <p className="form-error form-message">{error}</p>}<div className="form-actions"><Link className="secondary-link" to="/classes">取消</Link><button className="primary-button compact" disabled={saving}><Save size={17} />{saving ? '正在创建...' : '创建班级'}</button></div></form>
+    <form className="panel student-form" onSubmit={submit}><div className="form-section"><div><p className="eyebrow">班级信息</p><h2>基础资料</h2></div><div className="form-grid"><label className="wide">班级名称 <span>*</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required /></label><label>入学年份 <span>*</span><input type="number" min="1900" max="2200" value={entryYear} onChange={(e) => setEntryYear(Number(e.target.value))} required /></label><label>班主任教师 <span>*</span><select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required><option value="">请选择启用教师</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.username}</option>)}</select>{teachers.length === 0 && <small className="field-help">暂无可选教师，请先创建教师账号。</small>}</label></div></div>{error && <p className="form-error form-message">{error}</p>}<div className="form-actions"><Link className="secondary-link" to="/classes">取消</Link><button className="primary-button compact" disabled={saving}><Save size={17} />{saving ? '正在创建...' : '创建班级'}</button></div></form>
   </>
 }
 
@@ -358,12 +364,18 @@ function ClassDetail({ session }: { session: Session }) {
   const { id } = useParams()
   const [schoolClass, setSchoolClass] = useState<SchoolClass | null>(null)
   const [error, setError] = useState('')
-  useEffect(() => { if (id) api.schoolClass(session, id).then(setSchoolClass).catch((reason) => setError(reason instanceof Error ? reason.message : '班级加载失败')) }, [id, session])
+  const [students, setStudents] = useState<Student[]>([])
+  useEffect(() => {
+    if (!id) return
+    Promise.all([api.schoolClass(session, id), api.classStudents(session, id)])
+      .then(([classData, roster]) => { setSchoolClass(classData); setStudents(roster) })
+      .catch((reason) => setError(reason instanceof Error ? reason.message : '班级加载失败'))
+  }, [id, session])
   if (error) return <div className="empty-state">{error}</div>
   if (!schoolClass) return <div className="empty-state">正在加载班级信息...</div>
   return <>
     <section className="page-heading"><div><p className="eyebrow">班级详情</p><h1>{schoolClass.name}</h1><p className="muted">{schoolClass.entryYear}级教学班</p></div><Link className="secondary-link" to="/classes"><ArrowLeft size={17} />返回列表</Link></section>
-    <section className="class-detail-grid"><article className="panel detail-card"><p className="eyebrow">基本资料</p><h2>班级信息</h2><div className="detail-lines"><div><School size={18} /><span><small>班级名称</small>{schoolClass.name}</span></div><div><CalendarDays size={18} /><span><small>入学年份</small>{schoolClass.entryYear}</span></div><div><UserRound size={18} /><span><small>班主任账号</small>{schoolClass.homeroomTeacherUsername}</span></div><div><History size={18} /><span><small>创建时间</small>{formatDateTime(schoolClass.createdAt)}</span></div></div></article><article className="panel notice-panel"><p className="eyebrow">学生名单</p><h2>通过学生详情管理分班</h2><p className="muted">当前后端暂未提供按班级查询学生名单接口。管理员可前往学生详情执行入班、转班和离班，并查看完整分班历史。</p><Link className="secondary-link" to="/students">进入学生管理<ChevronRight size={15} /></Link></article></section>
+    <section className="class-detail-grid"><article className="panel detail-card"><p className="eyebrow">基本资料</p><h2>班级信息</h2><div className="detail-lines"><div><School size={18} /><span><small>班级名称</small>{schoolClass.name}</span></div><div><CalendarDays size={18} /><span><small>入学年份</small>{schoolClass.entryYear}</span></div><div><UserRound size={18} /><span><small>班主任账号</small>{schoolClass.homeroomTeacherUsername}</span></div><div><History size={18} /><span><small>创建时间</small>{formatDateTime(schoolClass.createdAt)}</span></div></div></article><article className="panel roster-panel"><div className="panel-heading"><div><p className="eyebrow">当前花名册</p><h2>{students.length} 名学生</h2></div><Link className="secondary-link" to="/students">管理分班<ChevronRight size={15} /></Link></div>{students.length === 0 ? <div className="empty-state">当前班级暂无学生</div> : <div className="roster-list">{students.map((student) => <Link to={`/students/${student.id}`} key={student.id}><span className="avatar">{student.name.slice(0, 1)}</span><div><strong>{student.name}</strong><small>{student.studentNumber}</small></div><span className={`status-badge ${student.status.toLowerCase()}`}>{statusLabels[student.status]}</span><ChevronRight size={15} /></Link>)}</div>}</article></section>
   </>
 }
 

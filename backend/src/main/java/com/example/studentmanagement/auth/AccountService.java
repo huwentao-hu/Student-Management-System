@@ -1,5 +1,7 @@
 package com.example.studentmanagement.auth;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,13 @@ public class AccountService {
 		Student student = validateAndFindStudent(request.role(), request.studentId());
 		UserAccount account = new UserAccount(username, passwordEncoder.encode(request.password()), request.role(), student);
 		return AccountResponse.from(userAccountRepository.save(account));
+	}
+
+	public List<AccountResponse> listEnabledTeachers() {
+		return userAccountRepository.findByRoleAndEnabledTrueOrderByUsernameAsc(UserRole.TEACHER)
+			.stream()
+			.map(AccountResponse::from)
+			.toList();
 	}
 
 	private Student validateAndFindStudent(UserRole role, Long studentId) {

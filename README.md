@@ -1,6 +1,6 @@
 # 学生管理系统
 
-当前已完成核心后端与数据库功能，并开始前端开发。前端已具备登录、角色导航、工作台、学生档案管理、班级管理和学生分班历史。
+当前已完成核心后端与数据库功能，并开始前端开发。前端已具备登录、角色导航、工作台、学生档案管理，以及包含教师选择、当前花名册和分班历史的班级管理。
 
 ## 启动前端
 
@@ -161,6 +161,13 @@ $classBody = @{
 
 Invoke-RestMethod -Uri "http://localhost:8080/api/classes" `
   -Method Post -ContentType "application/json" -Headers $headers -Body $classBody
+```
+
+查询启用教师和班级当前花名册：
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/accounts/teachers" -Headers $headers
+Invoke-RestMethod -Uri "http://localhost:8080/api/classes/1/students" -Headers $headers
 ```
 
 学生入班或转班：

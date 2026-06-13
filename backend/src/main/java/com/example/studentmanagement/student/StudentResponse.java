@@ -16,7 +16,7 @@ public record StudentResponse(
 		Instant createdAt,
 		Instant updatedAt) {
 
-	static StudentResponse from(Student student) {
+	public static StudentResponse from(Student student) {
 		return new StudentResponse(student.getId(), student.getStudentNumber(), student.getName(), student.getGender(),
 				student.getDateOfBirth(), student.getPhone(), student.getEmail(), student.getEnrollmentDate(),
 				student.getStatus(), student.getCreatedAt(), student.getUpdatedAt());

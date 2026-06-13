@@ -66,6 +66,16 @@ export type ClassAssignment = {
   createdAt: string
 }
 
+export type TeacherAccount = {
+  id: number
+  username: string
+  role: 'TEACHER'
+  studentId: null
+  enabled: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export type Page<T> = {
   content: T[]
   page: number

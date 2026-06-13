@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.studentmanagement.student.Student;
 import com.example.studentmanagement.student.StudentNotFoundException;
 import com.example.studentmanagement.student.StudentRepository;
+import com.example.studentmanagement.student.StudentResponse;
 
 @Service
 @Transactional(readOnly = true)
@@ -64,6 +65,17 @@ public class StudentClassAssignmentService {
 		return assignmentRepository.findByStudentIdOrderByStartDateDesc(studentId)
 			.stream()
 			.map(StudentClassAssignmentResponse::from)
+			.toList();
+	}
+
+	public List<StudentResponse> currentStudents(long classId) {
+		if (!schoolClassRepository.existsById(classId)) {
+			throw new SchoolClassNotFoundException(classId);
+		}
+		return assignmentRepository.findBySchoolClassIdAndEndDateIsNullOrderByStudentNameAsc(classId)
+			.stream()
+			.map(StudentClassAssignment::getStudent)
+			.map(StudentResponse::from)
 			.toList();
 	}
 

@@ -71,6 +71,7 @@
 .dashboard-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; margin-top: 18px; }
 .panel { border: 1px solid var(--line); border-radius: 15px; background: var(--panel); box-shadow: 0 6px 20px rgba(25,50,90,.035); }
 .panel-heading { padding: 22px 24px 10px; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .panel h2 { margin: 0; color: var(--navy); font-size: 18px; }
 .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; padding: 12px 16px 20px; }
 .quick-grid a { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 14px; border-radius: 10px; color: #435772; font-size: 12px; font-weight: 700; }
@@ -130,6 +131,8 @@ td:first-child { display: grid; gap: 3px; } td small { color: #8a98aa; font-size
 .class-card > span { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; color: var(--blue); background: #edf4ff; }
 .class-card div { display: grid; gap: 3px; }.class-card small { color: #7e8da1; font-size: 9px; font-weight: 800; }.class-card h3 { margin: 0; color: var(--navy); font-size: 14px; }.class-card p { margin: 0; color: #78889d; font-size: 10px; }
 .class-detail-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; }.class-detail-grid .notice-panel .secondary-link { margin-top: 18px; }
+.roster-panel { overflow: hidden; }.roster-panel .panel-heading { padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.roster-list { display: grid; }.roster-list > a { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 13px 20px; border-top: 1px solid #edf1f6; color: #73839a; }.roster-list > a:first-child { border-top: 0; }.roster-list > a:hover { background: #f8fafc; }.roster-list > a > div { display: grid; gap: 3px; }.roster-list strong { color: #3e526d; font-size: 11px; }.roster-list small { color: #8996a8; font-size: 9px; }
 .assignment-card { overflow: hidden; }
 .current-class { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 16px; border-radius: 11px; color: var(--blue); background: #f2f7fe; }
 .current-class span { display: grid; gap: 4px; color: var(--navy); font-size: 12px; font-weight: 800; }.current-class small { color: #7690b2; font-size: 9px; }

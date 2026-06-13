@@ -14,6 +14,8 @@ public interface StudentClassAssignmentRepository extends JpaRepository<StudentC
 
 	List<StudentClassAssignment> findByStudentIdOrderByStartDateDesc(Long studentId);
 
+	List<StudentClassAssignment> findBySchoolClassIdAndEndDateIsNullOrderByStudentNameAsc(Long classId);
+
 	@Query("""
 			select assignment
 			from StudentClassAssignment assignment
