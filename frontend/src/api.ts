@@ -1,4 +1,4 @@
-import type { ClassAssignment, CreateSchoolClassData, Page, SchoolClass, Session, Student, StudentFormData, StudentStatus, TeacherAccount, UpdateStudentData } from './types'
+import type { ClassAssignment, Course, CourseOffering, CourseStatus, CreateSchoolClassData, Page, SchoolClass, Semester, Session, Student, StudentFormData, StudentStatus, TeacherAccount, UpdateStudentData } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '')
 const SESSION_KEY = 'student-management-session'
@@ -117,6 +117,29 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ effectiveDate }),
     }, session)
+  },
+  courses(session: Session, keyword = '', status: CourseStatus | '' = '') {
+    const params = new URLSearchParams({ page: '0', size: '100' })
+    if (keyword) params.set('keyword', keyword)
+    if (status) params.set('status', status)
+    return request<Page<Course>>(`/api/courses?${params}`, {}, session)
+  },
+  course(session: Session, id: string) {
+    return request<Course>(`/api/courses/${id}`, {}, session)
+  },
+  createCourse(session: Session, data: { name: string, credits: number, status: CourseStatus }) {
+    return request<Course>('/api/courses', { method: 'POST', body: JSON.stringify({ ...data, name: data.name.trim() }) }, session)
+  },
+  offerings(session: Session, filters: { courseId?: string, classId?: string, academicYear?: string, semester?: Semester | '' } = {}) {
+    const params = new URLSearchParams({ page: '0', size: '100' })
+    Object.entries(filters).forEach(([key, value]) => { if (value) params.set(key, value) })
+    return request<Page<CourseOffering>>(`/api/course-offerings?${params}`, {}, session)
+  },
+  offering(session: Session, id: string) {
+    return request<CourseOffering>(`/api/course-offerings/${id}`, {}, session)
+  },
+  createOffering(session: Session, data: { courseId: number, classId: number, teacherId: number, academicYear: number, semester: Semester }) {
+    return request<CourseOffering>('/api/course-offerings', { method: 'POST', body: JSON.stringify(data) }, session)
   },
   pageCount(session: Session, resource: string) {
     return request<Page<unknown>>(`/api/${resource}?page=0&size=1`, {}, session)

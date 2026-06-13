@@ -85,6 +85,7 @@
 .search-box { display: flex; align-items: center; gap: 8px; min-width: 300px; padding-left: 12px; border: 1px solid #d9e1ec; border-radius: 11px; color: #7d8ca1; background: #fff; }
 .search-box input { border: 0; box-shadow: none !important; }
 .filters select { width: 160px; }
+.filter-action { margin-left: auto; border: 0; white-space: nowrap; }
 .year-filter { width: 160px; padding: 13px 14px; border: 1px solid #d9e1ec; border-radius: 11px; color: var(--navy); background: #fff; outline: none; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
@@ -130,6 +131,13 @@ td:first-child { display: grid; gap: 3px; } td small { color: #8a98aa; font-size
 .class-card:hover { transform: translateY(-2px); border-color: #abc6ed; }
 .class-card > span { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; color: var(--blue); background: #edf4ff; }
 .class-card div { display: grid; gap: 3px; }.class-card small { color: #7e8da1; font-size: 9px; font-weight: 800; }.class-card h3 { margin: 0; color: var(--navy); font-size: 14px; }.class-card p { margin: 0; color: #78889d; font-size: 10px; }
+.tab-bar { display: flex; gap: 5px; width: fit-content; margin-bottom: 16px; padding: 4px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+.tab-bar button { display: flex; align-items: center; gap: 7px; padding: 9px 13px; border: 0; border-radius: 8px; color: #718098; background: transparent; font-size: 11px; font-weight: 800; }.tab-bar button.active { color: var(--blue); background: #edf4ff; }
+.inline-create { display: grid; grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+.inline-create label { display: grid; gap: 6px; color: #5b6d85; font-size: 9px; font-weight: 800; }.inline-create input, .inline-create select { min-width: 0; width: 100%; padding: 9px 10px; border: 1px solid #d9e1ec; border-radius: 8px; color: var(--navy); background: #fff; font-size: 10px; }.inline-create button { border: 0; }
+.offering-create { grid-template-columns: repeat(5, minmax(110px, 1fr)) auto; }.offering-filters select { min-width: 130px; }
+.course-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 20px; }
+.course-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 13px; padding: 18px; border: 1px solid #e5ebf3; border-radius: 12px; transition: border-color .18s, transform .18s; }.course-card:hover { transform: translateY(-2px); border-color: #abc6ed; }.course-card > span:first-child { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; color: #7257c7; background: #f2efff; }.course-card div { display: grid; gap: 3px; }.course-card small { color: #7e8da1; font-size: 9px; font-weight: 800; }.course-card h3 { margin: 0; color: var(--navy); font-size: 14px; }.course-card p { margin: 0; color: #78889d; font-size: 10px; }
 .class-detail-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; }.class-detail-grid .notice-panel .secondary-link { margin-top: 18px; }
 .roster-panel { overflow: hidden; }.roster-panel .panel-heading { padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .roster-list { display: grid; }.roster-list > a { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 13px 20px; border-top: 1px solid #edf1f6; color: #73839a; }.roster-list > a:first-child { border-top: 0; }.roster-list > a:hover { background: #f8fafc; }.roster-list > a > div { display: grid; gap: 3px; }.roster-list strong { color: #3e526d; font-size: 11px; }.roster-list small { color: #8996a8; font-size: 9px; }
@@ -158,5 +166,6 @@ td:first-child { display: grid; gap: 3px; } td small { color: #8a98aa; font-size
   .form-section { grid-template-columns: 1fr; gap: 18px; padding: 22px; }.form-grid { grid-template-columns: 1fr; }.form-grid label.wide { grid-column: auto; }
   .student-profile { grid-template-columns: 1fr; }.detail-lines { grid-template-columns: 1fr; }.form-actions { padding: 18px 22px; }
   .class-grid, .class-detail-grid { grid-template-columns: 1fr; }.assignment-actions { grid-template-columns: 1fr; }.year-filter { width: 100%; }
+  .course-grid, .inline-create, .offering-create { grid-template-columns: 1fr; }.offering-filters select { width: 100%; }.filter-action { margin-left: 0; }
   .topbar .eyebrow { display: none; }.content { padding-inline: 14px; }.login-panel { padding: 22px; }
 }

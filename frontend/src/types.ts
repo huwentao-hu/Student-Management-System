@@ -76,6 +76,34 @@ export type TeacherAccount = {
   updatedAt: string
 }
 
+export type CourseStatus = 'ACTIVE' | 'INACTIVE'
+export type Semester = 'FIRST' | 'SECOND'
+
+export type Course = {
+  id: number
+  courseCode: string
+  name: string
+  credits: number
+  status: CourseStatus
+  createdAt: string
+  updatedAt: string
+}
+
+export type CourseOffering = {
+  id: number
+  courseId: number
+  courseCode: string
+  courseName: string
+  classId: number
+  className: string
+  teacherId: number
+  teacherUsername: string
+  academicYear: number
+  semester: Semester
+  createdAt: string
+  updatedAt: string
+}
+
 export type Page<T> = {
   content: T[]
   page: number
