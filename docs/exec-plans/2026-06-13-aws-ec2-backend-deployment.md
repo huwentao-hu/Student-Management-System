@@ -44,6 +44,7 @@
 - 健康检查已改为最多等待 120 秒，并在失败时输出容器日志。
 - 第三次 GitHub Actions 暴露 Actions 本地组装 SSM 脚本时的远端变量转义问题，已修正。
 - 第四次 GitHub Actions 暴露健康检查循环命令替换被 Actions 提前展开的问题，已修正。
+- 第五次 GitHub Actions 的 SSM 命令仍在执行时超过 AWS CLI 默认 waiter 等待时长；已改为最长 6 分钟的自定义状态轮询。
 - 等待重新运行首次自动部署。
 
 ## 已创建 AWS 资源
