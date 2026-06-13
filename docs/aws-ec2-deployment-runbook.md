@@ -14,6 +14,17 @@ GitHub IAM role: StudentManagementGitHubDeployRole
 Container: student-management-backend
 ```
 
+本次部署已经确定的资源：
+
+```text
+AWS Account ID: 059535450246
+Region: ap-southeast-1
+VPC: vpc-07a4d37cf359f18cf
+EC2 Security Group: sg-0f46592065cf59169
+RDS Security Group: sg-095667a2152dda46e
+RDS Endpoint: student-management-db.c1mkysoogwzv.ap-southeast-1.rds.amazonaws.com
+```
+
 如果主要访问者位于中国大陆，可在 AWS 控制台测试新加坡 `ap-southeast-1`、东京 `ap-northeast-1` 等区域的访问质量后选择。区域一旦确定，后续资源保持一致。
 
 ## 1. 创建网络安全组

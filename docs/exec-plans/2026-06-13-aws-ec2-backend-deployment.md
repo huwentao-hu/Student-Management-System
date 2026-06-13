@@ -34,4 +34,18 @@
 - 后端自动化测试通过，共 44 项。
 - 后端生产 Docker 镜像构建通过。
 - Docker 容器连接 PostgreSQL 启动成功，`/api/health` 返回服务与数据库均为 `UP`。
-- 等待创建 AWS 资源并回填资源标识。
+- 已创建区域 `ap-southeast-1` 中的私有 RDS、EC2 安全组和 RDS 安全组。
+- 已验证 RDS Endpoint 解析到私网地址，且无法从本机公网连接 `5432`。
+- 已配置 GitHub Variables：`AWS_REGION`、`AWS_ACCOUNT_ID`、`ECR_REPOSITORY`、`CONTAINER_NAME`。
+- 等待创建 EC2 IAM 角色、EC2、Elastic IP、ECR 与 GitHub OIDC 部署角色。
+
+## 已创建 AWS 资源
+
+```text
+AWS Account ID: 059535450246
+AWS Region: ap-southeast-1
+VPC ID: vpc-07a4d37cf359f18cf
+EC2 Security Group: sg-0f46592065cf59169
+RDS Security Group: sg-095667a2152dda46e
+RDS Endpoint: student-management-db.c1mkysoogwzv.ap-southeast-1.rds.amazonaws.com
+```
