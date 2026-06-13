@@ -86,10 +86,12 @@
 - 后端生产 Docker 镜像。
 - EC2、ECR、SSM 与 GitHub OIDC 自动部署工作流。
 - EC2 + 私有 RDS + Nginx + HTTPS 完整部署操作手册。
+- EC2 后端、私有 RDS、ECR、SSM 与 GitHub Actions 自动部署。
+- `api.751905.xyz` Nginx 反向代理、HTTPS、健康检查和双前端域名 CORS。
 
 ### 下一步需求确认
 
-创建 AWS EC2、私有 RDS、ECR、IAM 与 SSM 资源，完成后端首次公网部署；随后将 Cloudflare Pages 连接到 HTTPS API，并继续实现学生课程表前端。
+在 Cloudflare Pages Production 环境设置 `VITE_API_BASE_URL=https://api.751905.xyz` 并重新部署前端；完成公网登录联调后继续实现学生课程表前端。
 
 仍待确认：学生入学年份是否必须与班级入学年份一致。
 

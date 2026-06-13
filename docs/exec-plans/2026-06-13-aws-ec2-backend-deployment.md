@@ -50,7 +50,10 @@
 - 已创建 `student_management` 生产数据库，Flyway 自动迁移成功。
 - 首次完整 GitHub Actions 自动部署成功：测试、OIDC、ECR、SSM、容器健康检查和 Nginx 检查全部通过。
 - 生产后端健康检查返回服务与数据库均为 `UP`，容器仅绑定 `127.0.0.1:8000`。
-- 等待配置 `api.751905.xyz` DNS、Nginx 反向代理与 HTTPS。
+- 已配置 `api.751905.xyz` DNS、Nginx 反向代理与 HTTPS。
+- 已从公网验证 HTTPS 健康检查返回服务与数据库均为 `UP`，HTTP 自动跳转 HTTPS。
+- 已验证 `stu.751905.xyz` 与 `student-management-system-2q4.pages.dev` 的 CORS 预检请求成功。
+- 等待在 Cloudflare Pages Production 环境设置 `VITE_API_BASE_URL=https://api.751905.xyz` 并重新部署前端。
 
 ## 已创建 AWS 资源
 

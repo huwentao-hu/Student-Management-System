@@ -1,6 +1,6 @@
 # Cloudflare Pages 部署设计
 
-最后更新：2026-06-12
+最后更新：2026-06-13
 
 Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后端部署到 EC2 Docker 并由 Nginx 提供 HTTPS API；PostgreSQL 使用禁止公网访问的 RDS。
 
@@ -11,7 +11,7 @@ Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后
 - Root directory：`frontend`
 - Build command：`npm run build`
 - Build output directory：`dist`
-- 环境变量：`VITE_API_BASE_URL=https://你的后端域名`
+- 环境变量：`VITE_API_BASE_URL=https://api.751905.xyz`
 
 `frontend/public/_redirects` 中的 `/* /index.html 200` 会进入构建产物，保证直接访问前端子路由时仍返回应用入口。
 
@@ -19,4 +19,6 @@ Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后
 
 ## 当前状态
 
-项目源代码已推送到 GitHub `main` 分支。后端 EC2 自动部署配置已经准备，待完成 AWS 首次部署并取得 HTTPS API 域名后，在 Cloudflare Pages 控制台填写 `VITE_API_BASE_URL`。
+后端已通过 GitHub Actions 自动部署到 EC2，生产 API 为 `https://api.751905.xyz`。HTTPS 健康检查返回服务与数据库均为 `UP`，并已允许 `https://stu.751905.xyz` 和 `https://student-management-system-2q4.pages.dev` 跨域访问。
+
+最后一步是在 Cloudflare Pages Production 环境配置 `VITE_API_BASE_URL=https://api.751905.xyz` 并重新部署前端。
