@@ -40,6 +40,8 @@
 - 已配置 GitHub Variables：`AWS_REGION`、`AWS_ACCOUNT_ID`、`ECR_REPOSITORY`、`CONTAINER_NAME`、`EC2_INSTANCE_ID`。
 - 已初始化 EC2，并创建 ECR 与 GitHub OIDC 部署角色。
 - 首次 GitHub Actions 暴露 Linux Maven Wrapper 执行权限问题，工作流已改为通过 Bash 调用。
+- 第二次 GitHub Actions 已通过测试、OIDC、ECR 构建推送和 SSM 镜像拉取；固定 15 秒健康检查早于 Spring Boot 首次启动完成。
+- 健康检查已改为最多等待 120 秒，并在失败时输出容器日志。
 - 等待重新运行首次自动部署。
 
 ## 已创建 AWS 资源

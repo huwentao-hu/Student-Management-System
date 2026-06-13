@@ -98,8 +98,18 @@ jobs:
             --env-file /etc/student-management/backend.env \
             -p 127.0.0.1:8000:8080 \
             "${IMAGE_URI}"
-          sleep 15
-          curl --fail --silent --show-error http://127.0.0.1:8000/api/health
+          HEALTHY=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:8000/api/health; then
+              HEALTHY=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$HEALTHY" != "true" ]; then
+            docker logs --tail 200 "${CONTAINER_NAME}"
+            exit 1
+          fi
           nginx -t
           systemctl restart nginx
           systemctl is-active nginx
