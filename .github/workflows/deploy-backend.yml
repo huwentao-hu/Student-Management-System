@@ -106,7 +106,7 @@ jobs:
             fi
             sleep 2
           done
-          if [ "$HEALTHY" != "true" ]; then
+          if [ "\$HEALTHY" != "true" ]; then
             docker logs --tail 200 "${CONTAINER_NAME}"
             exit 1
           fi
