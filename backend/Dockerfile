@@ -4,10 +4,10 @@ WORKDIR /workspace
 
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -DskipTests
+RUN bash mvnw dependency:go-offline -DskipTests
 
 COPY src src
-RUN ./mvnw clean package -DskipTests
+RUN bash mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy
 

@@ -38,7 +38,9 @@
 - 已验证 RDS Endpoint 解析到私网地址，且无法从本机公网连接 `5432`。
 - 已创建 EC2、Elastic IP 与 EC2 IAM 角色，Session Manager 已成功连接。
 - 已配置 GitHub Variables：`AWS_REGION`、`AWS_ACCOUNT_ID`、`ECR_REPOSITORY`、`CONTAINER_NAME`、`EC2_INSTANCE_ID`。
-- 等待初始化 EC2、创建 ECR 与 GitHub OIDC 部署角色。
+- 已初始化 EC2，并创建 ECR 与 GitHub OIDC 部署角色。
+- 首次 GitHub Actions 暴露 Linux Maven Wrapper 执行权限问题，工作流已改为通过 Bash 调用。
+- 等待重新运行首次自动部署。
 
 ## 已创建 AWS 资源
 
