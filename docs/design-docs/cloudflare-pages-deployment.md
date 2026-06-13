@@ -19,4 +19,4 @@ Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后
 
 ## 当前状态
 
-项目源代码已准备推送到 GitHub。完成推送后，需要在 Cloudflare Pages 控制台连接仓库并填写上述构建配置。
+项目源代码已推送到 GitHub `main` 分支。下一步需要在 Cloudflare Pages 控制台连接仓库并填写上述构建配置。
