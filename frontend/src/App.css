@@ -84,6 +84,7 @@
 .search-box { display: flex; align-items: center; gap: 8px; min-width: 300px; padding-left: 12px; border: 1px solid #d9e1ec; border-radius: 11px; color: #7d8ca1; background: #fff; }
 .search-box input { border: 0; box-shadow: none !important; }
 .filters select { width: 160px; }
+.year-filter { width: 160px; padding: 13px 14px; border: 1px solid #d9e1ec; border-radius: 11px; color: var(--navy); background: #fff; outline: none; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th { padding: 12px 20px; color: #718099; background: #f8fafc; font-size: 10px; letter-spacing: .07em; }
@@ -122,6 +123,22 @@ td:first-child { display: grid; gap: 3px; } td small { color: #8a98aa; font-size
 .detail-lines > div { display: flex; align-items: center; gap: 12px; padding: 15px; border-radius: 11px; color: #6380a4; background: #f7f9fc; }
 .detail-lines span { display: grid; gap: 4px; color: #354a65; font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
 .detail-lines small { color: #8996a8; font-size: 9px; font-weight: 700; }
+.field-help { color: #8491a3; font-size: 9px; font-weight: 500; line-height: 1.5; }
+.class-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 20px; }
+.class-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 13px; padding: 18px; border: 1px solid #e5ebf3; border-radius: 12px; color: #71839a; transition: border-color .18s, transform .18s; }
+.class-card:hover { transform: translateY(-2px); border-color: #abc6ed; }
+.class-card > span { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; color: var(--blue); background: #edf4ff; }
+.class-card div { display: grid; gap: 3px; }.class-card small { color: #7e8da1; font-size: 9px; font-weight: 800; }.class-card h3 { margin: 0; color: var(--navy); font-size: 14px; }.class-card p { margin: 0; color: #78889d; font-size: 10px; }
+.class-detail-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; }.class-detail-grid .notice-panel .secondary-link { margin-top: 18px; }
+.assignment-card { overflow: hidden; }
+.current-class { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 16px; border-radius: 11px; color: var(--blue); background: #f2f7fe; }
+.current-class span { display: grid; gap: 4px; color: var(--navy); font-size: 12px; font-weight: 800; }.current-class small { color: #7690b2; font-size: 9px; }
+.assignment-actions { display: grid; grid-template-columns: minmax(150px, 1fr) 145px auto auto; gap: 8px; margin-top: 14px; }
+.assignment-actions select, .assignment-actions input { min-width: 0; padding: 9px 10px; border: 1px solid #d9e1ec; border-radius: 9px; color: var(--navy); background: #fff; font-size: 10px; }
+.assignment-actions button { border: 0; }.assignment-actions button:disabled { cursor: not-allowed; opacity: .55; }
+.danger-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; border-radius: 9px; color: #a64453; font-size: 10px; font-weight: 800; background: #fcedf0; }
+.history-list { display: grid; margin-top: 20px; }.history-list > div { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #edf1f6; }.history-list > div > div { display: grid; gap: 4px; }.history-list strong { color: #415570; font-size: 11px; }.history-list small { color: #8492a5; font-size: 9px; }
+.history-dot { width: 9px; height: 9px; border: 2px solid #9facbc; border-radius: 50%; }.history-dot.current { border-color: #2e8b70; background: #2e8b70; box-shadow: 0 0 0 4px rgba(46,139,112,.1); }
 .nav-overlay { display: none; }
 
 @media (max-width: 900px) {
@@ -137,5 +154,6 @@ td:first-child { display: grid; gap: 3px; } td small { color: #8a98aa; font-size
   .heading-actions { justify-content: flex-start; margin-left: 0; flex-wrap: wrap; }
   .form-section { grid-template-columns: 1fr; gap: 18px; padding: 22px; }.form-grid { grid-template-columns: 1fr; }.form-grid label.wide { grid-column: auto; }
   .student-profile { grid-template-columns: 1fr; }.detail-lines { grid-template-columns: 1fr; }.form-actions { padding: 18px 22px; }
+  .class-grid, .class-detail-grid { grid-template-columns: 1fr; }.assignment-actions { grid-template-columns: 1fr; }.year-filter { width: 100%; }
   .topbar .eyebrow { display: none; }.content { padding-inline: 14px; }.login-panel { padding: 22px; }
 }

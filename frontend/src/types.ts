@@ -38,6 +38,34 @@ export type UpdateStudentData = StudentFormData & {
   status: StudentStatus
 }
 
+export type SchoolClass = {
+  id: number
+  name: string
+  entryYear: number
+  homeroomTeacherId: number
+  homeroomTeacherUsername: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type CreateSchoolClassData = {
+  name: string
+  entryYear: number
+  homeroomTeacherId: number
+}
+
+export type ClassAssignment = {
+  id: number
+  studentId: number
+  classId: number
+  className: string
+  classEntryYear: number
+  startDate: string
+  endDate: string | null
+  current: boolean
+  createdAt: string
+}
+
 export type Page<T> = {
   content: T[]
   page: number

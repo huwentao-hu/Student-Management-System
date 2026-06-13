@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import {
   ArrowLeft, BookOpen, CalendarDays, CheckCircle2, ChevronRight, ClipboardCheck, Edit3,
-  GraduationCap, LayoutDashboard, LogOut, Mail, Menu, Phone, Plus, Save, School, Search,
-  Settings, TrendingUp, UserRound, Users, X,
+  GraduationCap, History, LayoutDashboard, LogOut, Mail, Menu, Phone, Plus, Save, School,
+  Search, Settings, TrendingUp, UserMinus, UserPlus, UserRound, Users, X,
 } from 'lucide-react'
 import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, clearSession, loadSession, saveSession } from './api'
-import type { Role, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
+import type { ClassAssignment, Role, SchoolClass, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
 import './App.css'
 
 const roleLabels: Record<Role, string> = { ADMIN: '管理员', TEACHER: '教师', STUDENT: '学生' }
@@ -245,8 +245,125 @@ function StudentDetail({ session }: { session: Session }) {
       <div className="profile-details">
         <article className="panel detail-card"><p className="eyebrow">联系信息</p><h2>联系方式</h2><div className="detail-lines"><div><Phone size={18} /><span><small>手机号</small>{student.phone || '未填写'}</span></div><div><Mail size={18} /><span><small>电子邮箱</small>{student.email || '未填写'}</span></div></div></article>
         <article className="panel detail-card"><p className="eyebrow">记录信息</p><h2>档案时间</h2><div className="detail-lines"><div><CalendarDays size={18} /><span><small>创建时间</small>{formatDateTime(student.createdAt)}</span></div><div><Edit3 size={18} /><span><small>最后更新</small>{formatDateTime(student.updatedAt)}</span></div></div></article>
+        <ClassAssignmentPanel session={session} student={student} />
       </div>
     </section>
+  </>
+}
+
+function ClassAssignmentPanel({ session, student }: { session: Session, student: Student }) {
+  const [assignments, setAssignments] = useState<ClassAssignment[]>([])
+  const [classes, setClasses] = useState<SchoolClass[]>([])
+  const [classId, setClassId] = useState('')
+  const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().slice(0, 10))
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const current = assignments.find((assignment) => assignment.current)
+
+  function load() {
+    api.classAssignments(session, student.id).then(setAssignments)
+      .catch((reason) => setError(reason instanceof Error ? reason.message : '分班历史加载失败'))
+    if (session.role === 'ADMIN') api.classes(session).then((page) => setClasses(page.content)).catch(() => undefined)
+  }
+
+  useEffect(load, [session, student.id])
+
+  async function assign() {
+    if (!classId || !effectiveDate) return
+    setSaving(true)
+    setError('')
+    try {
+      await api.assignClass(session, student.id, Number(classId), effectiveDate)
+      load()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '分班操作失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function leave() {
+    if (!effectiveDate) return
+    setSaving(true)
+    setError('')
+    try {
+      await api.leaveClass(session, student.id, effectiveDate)
+      load()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '离班操作失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <article className="panel detail-card assignment-card">
+    <p className="eyebrow">班级归属</p><h2>分班历史</h2>
+    <div className="current-class"><School size={20} /><span><small>当前班级</small>{current ? `${current.classEntryYear}级 · ${current.className}` : '当前未分班'}</span></div>
+    {session.role === 'ADMIN' && <div className="assignment-actions"><select value={classId} onChange={(e) => setClassId(e.target.value)}><option value="">选择目标班级</option>{classes.map((item) => <option key={item.id} value={item.id}>{item.entryYear}级 · {item.name}</option>)}</select><input type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} /><button className="primary-link" type="button" disabled={saving || !classId} onClick={assign}><UserPlus size={15} />{current ? '转班' : '入班'}</button>{current && <button className="danger-link" type="button" disabled={saving} onClick={leave}><UserMinus size={15} />离班</button>}</div>}
+    {error && <p className="form-error">{error}</p>}
+    <div className="history-list">{assignments.length === 0 ? <p className="muted">暂无分班历史</p> : assignments.map((assignment) => <div key={assignment.id}><span className={assignment.current ? 'history-dot current' : 'history-dot'} /><div><strong>{assignment.classEntryYear}级 · {assignment.className}</strong><small>{assignment.startDate} 至 {assignment.endDate || '现在'}</small></div>{assignment.current && <span className="status-badge active">当前</span>}</div>)}</div>
+  </article>
+}
+
+function ClassList({ session }: { session: Session }) {
+  const [classes, setClasses] = useState<SchoolClass[]>([])
+  const [keyword, setKeyword] = useState('')
+  const [entryYear, setEntryYear] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(true); setError('')
+      api.classes(session, keyword, entryYear).then((page) => setClasses(page.content))
+        .catch((reason) => setError(reason instanceof Error ? reason.message : '班级数据加载失败'))
+        .finally(() => setLoading(false))
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [entryYear, keyword, session])
+
+  return <>
+    <section className="page-heading"><div><p className="eyebrow">教学组织</p><h1>班级管理</h1><p className="muted">查询班级、入学年份与班主任信息。</p></div><div className="heading-actions"><span className="date-chip">共 {classes.length} 个班级</span>{session.role === 'ADMIN' && <Link className="primary-link" to="/classes/new"><Plus size={17} />新增班级</Link>}</div></section>
+    <section className="panel"><div className="filters"><label className="search-box"><Search size={18} /><input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="搜索班级名称" /></label><input className="year-filter" type="number" min="1900" max="2200" value={entryYear} onChange={(e) => setEntryYear(e.target.value)} placeholder="入学年份" /></div>
+      {error ? <div className="empty-state">{error}</div> : loading ? <div className="empty-state">正在加载班级数据...</div> : classes.length === 0 ? <div className="empty-state">暂无符合条件的班级</div> : <div className="class-grid">{classes.map((item) => <Link className="class-card" to={`/classes/${item.id}`} key={item.id}><span><School size={22} /></span><div><small>{item.entryYear}级</small><h3>{item.name}</h3><p>班主任：{item.homeroomTeacherUsername}</p></div><ChevronRight size={17} /></Link>)}</div>}
+    </section>
+  </>
+}
+
+function ClassCreate({ session }: { session: Session }) {
+  const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [entryYear, setEntryYear] = useState(new Date().getFullYear())
+  const [teacherId, setTeacherId] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setSaving(true); setError('')
+    try {
+      const created = await api.createSchoolClass(session, { name, entryYear, homeroomTeacherId: Number(teacherId) })
+      navigate(`/classes/${created.id}`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '班级创建失败')
+    } finally { setSaving(false) }
+  }
+
+  return <>
+    <section className="page-heading"><div><p className="eyebrow">新建教学组织</p><h1>新增班级</h1><p className="muted">同一入学年份内班级名称不能重复。</p></div><Link className="secondary-link" to="/classes"><ArrowLeft size={17} />返回列表</Link></section>
+    <form className="panel student-form" onSubmit={submit}><div className="form-section"><div><p className="eyebrow">班级信息</p><h2>基础资料</h2></div><div className="form-grid"><label className="wide">班级名称 <span>*</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required /></label><label>入学年份 <span>*</span><input type="number" min="1900" max="2200" value={entryYear} onChange={(e) => setEntryYear(Number(e.target.value))} required /></label><label>班主任教师账号 ID <span>*</span><input type="number" min="1" value={teacherId} onChange={(e) => setTeacherId(e.target.value)} required /><small className="field-help">当前后端尚无教师列表接口，请填写已启用教师账号 ID。</small></label></div></div>{error && <p className="form-error form-message">{error}</p>}<div className="form-actions"><Link className="secondary-link" to="/classes">取消</Link><button className="primary-button compact" disabled={saving}><Save size={17} />{saving ? '正在创建...' : '创建班级'}</button></div></form>
+  </>
+}
+
+function ClassDetail({ session }: { session: Session }) {
+  const { id } = useParams()
+  const [schoolClass, setSchoolClass] = useState<SchoolClass | null>(null)
+  const [error, setError] = useState('')
+  useEffect(() => { if (id) api.schoolClass(session, id).then(setSchoolClass).catch((reason) => setError(reason instanceof Error ? reason.message : '班级加载失败')) }, [id, session])
+  if (error) return <div className="empty-state">{error}</div>
+  if (!schoolClass) return <div className="empty-state">正在加载班级信息...</div>
+  return <>
+    <section className="page-heading"><div><p className="eyebrow">班级详情</p><h1>{schoolClass.name}</h1><p className="muted">{schoolClass.entryYear}级教学班</p></div><Link className="secondary-link" to="/classes"><ArrowLeft size={17} />返回列表</Link></section>
+    <section className="class-detail-grid"><article className="panel detail-card"><p className="eyebrow">基本资料</p><h2>班级信息</h2><div className="detail-lines"><div><School size={18} /><span><small>班级名称</small>{schoolClass.name}</span></div><div><CalendarDays size={18} /><span><small>入学年份</small>{schoolClass.entryYear}</span></div><div><UserRound size={18} /><span><small>班主任账号</small>{schoolClass.homeroomTeacherUsername}</span></div><div><History size={18} /><span><small>创建时间</small>{formatDateTime(schoolClass.createdAt)}</span></div></div></article><article className="panel notice-panel"><p className="eyebrow">学生名单</p><h2>通过学生详情管理分班</h2><p className="muted">当前后端暂未提供按班级查询学生名单接口。管理员可前往学生详情执行入班、转班和离班，并查看完整分班历史。</p><Link className="secondary-link" to="/students">进入学生管理<ChevronRight size={15} /></Link></article></section>
   </>
 }
 
@@ -265,7 +382,9 @@ function ProtectedRoutes({ session, onLogout }: { session: Session, onLogout: ()
     <Route path="/students/new" element={session.role === 'ADMIN' ? <StudentFormPage session={session} mode="create" /> : <Navigate to="/students" />} />
     <Route path="/students/:id" element={session.role === 'STUDENT' ? <Navigate to="/" /> : <StudentDetail session={session} />} />
     <Route path="/students/:id/edit" element={session.role === 'ADMIN' ? <StudentFormPage session={session} mode="edit" /> : <Navigate to="/students" />} />
-    <Route path="/classes" element={<ModulePlaceholder title="班级管理" description="管理班级、班主任与学生分班历史。" icon={<School />} />} />
+    <Route path="/classes" element={session.role === 'STUDENT' ? <Navigate to="/" /> : <ClassList session={session} />} />
+    <Route path="/classes/new" element={session.role === 'ADMIN' ? <ClassCreate session={session} /> : <Navigate to="/classes" />} />
+    <Route path="/classes/:id" element={session.role === 'STUDENT' ? <Navigate to="/" /> : <ClassDetail session={session} />} />
     <Route path="/courses" element={<ModulePlaceholder title="课程管理" description="管理课程目录与学期开课安排。" icon={<BookOpen />} />} />
     <Route path="/timetable" element={<ModulePlaceholder title="学生课程表" description="按学年学期查看学生课程安排。" icon={<CalendarDays />} />} />
     <Route path="/grades" element={<ModulePlaceholder title="成绩管理" description="录入成绩并查看教学班与学生学期统计。" icon={<TrendingUp />} />} />

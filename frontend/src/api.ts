@@ -1,4 +1,4 @@
-import type { Page, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
+import type { ClassAssignment, CreateSchoolClassData, Page, SchoolClass, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '')
 const SESSION_KEY = 'student-management-session'
@@ -80,6 +80,36 @@ export const api = {
     return request<Student>(`/api/students/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ ...normalizeStudentData(data), status: data.status }),
+    }, session)
+  },
+  classes(session: Session, keyword = '', entryYear = '') {
+    const params = new URLSearchParams({ page: '0', size: '100' })
+    if (keyword) params.set('keyword', keyword)
+    if (entryYear) params.set('entryYear', entryYear)
+    return request<Page<SchoolClass>>(`/api/classes?${params}`, {}, session)
+  },
+  schoolClass(session: Session, id: string) {
+    return request<SchoolClass>(`/api/classes/${id}`, {}, session)
+  },
+  createSchoolClass(session: Session, data: CreateSchoolClassData) {
+    return request<SchoolClass>('/api/classes', {
+      method: 'POST',
+      body: JSON.stringify({ ...data, name: data.name.trim() }),
+    }, session)
+  },
+  classAssignments(session: Session, studentId: number) {
+    return request<ClassAssignment[]>(`/api/students/${studentId}/class-assignments`, {}, session)
+  },
+  assignClass(session: Session, studentId: number, classId: number, effectiveDate: string) {
+    return request<ClassAssignment>(`/api/students/${studentId}/class-assignments`, {
+      method: 'POST',
+      body: JSON.stringify({ classId, effectiveDate }),
+    }, session)
+  },
+  leaveClass(session: Session, studentId: number, effectiveDate: string) {
+    return request<ClassAssignment>(`/api/students/${studentId}/class-assignments/leave`, {
+      method: 'POST',
+      body: JSON.stringify({ effectiveDate }),
     }, session)
   },
   pageCount(session: Session, resource: string) {
