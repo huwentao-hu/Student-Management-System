@@ -46,7 +46,8 @@
 - 第四次 GitHub Actions 暴露健康检查循环命令替换被 Actions 提前展开的问题，已修正。
 - 第五次 GitHub Actions 的 SSM 命令仍在执行时超过 AWS CLI 默认 waiter 等待时长；已改为最长 6 分钟的自定义状态轮询。
 - 第六次 GitHub Actions 已完整验证测试、OIDC、ECR、SSM、EC2 镜像启动和最终日志采集。
-- 当前唯一部署阻塞为 RDS 拒绝 `student_admin` 密码认证；等待确认主用户名、重置 RDS 密码并同步更新 EC2 环境文件。
+- RDS 主用户名和密码已确认并同步，数据库认证成功。
+- 当前唯一部署阻塞为 RDS 中尚不存在 `student_management` 数据库；等待通过 EC2 创建数据库，随后 Flyway 将自动创建业务结构。
 
 ## 已创建 AWS 资源
 
