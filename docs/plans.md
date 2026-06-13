@@ -83,10 +83,13 @@
 - 班级当前花名册接口与班级详情名单。
 - 课程目录列表、筛选、创建和详情前端。
 - 开课安排列表、筛选、创建和详情前端。
+- 后端生产 Docker 镜像。
+- EC2、ECR、SSM 与 GitHub OIDC 自动部署工作流。
+- EC2 + 私有 RDS + Nginx + HTTPS 完整部署操作手册。
 
 ### 下一步需求确认
 
-连接 GitHub 仓库到 Cloudflare Pages，获得长期可访问的前端 `pages.dev` 地址；随后实现学生课程表前端。
+创建 AWS EC2、私有 RDS、ECR、IAM 与 SSM 资源，完成后端首次公网部署；随后将 Cloudflare Pages 连接到 HTTPS API，并继续实现学生课程表前端。
 
 仍待确认：学生入学年份是否必须与班级入学年份一致。
 

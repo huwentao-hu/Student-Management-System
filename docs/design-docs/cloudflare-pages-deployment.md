@@ -2,7 +2,7 @@
 
 最后更新：2026-06-12
 
-Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后端和 PostgreSQL 数据库需要部署到独立的公网服务，并提供 HTTPS API 地址。
+Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后端部署到 EC2 Docker 并由 Nginx 提供 HTTPS API；PostgreSQL 使用禁止公网访问的 RDS。
 
 ## Pages 构建配置
 
@@ -19,4 +19,4 @@ Cloudflare Pages 只托管 `frontend` 构建出的静态文件。Spring Boot 后
 
 ## 当前状态
 
-项目源代码已推送到 GitHub `main` 分支。下一步需要在 Cloudflare Pages 控制台连接仓库并填写上述构建配置。
+项目源代码已推送到 GitHub `main` 分支。后端 EC2 自动部署配置已经准备，待完成 AWS 首次部署并取得 HTTPS API 域名后，在 Cloudflare Pages 控制台填写 `VITE_API_BASE_URL`。

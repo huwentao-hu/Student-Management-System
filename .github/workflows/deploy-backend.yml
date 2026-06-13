@@ -1,0 +1,134 @@
+name: Deploy backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: production-backend
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+  CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          set -euo pipefail
+          for name in AWS_REGION AWS_ACCOUNT_ID ECR_REPOSITORY EC2_INSTANCE_ID CONTAINER_NAME AWS_ROLE_ARN; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured"
+              exit 1
+            fi
+          done
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Run backend tests
+        working-directory: backend
+        run: ./mvnw test
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          set -euo pipefail
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+          LATEST_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:latest"
+          docker build --tag "$IMAGE_URI" --tag "$LATEST_URI" backend
+          docker push "$IMAGE_URI"
+          docker push "$LATEST_URI"
+
+      - name: Deploy image through Systems Manager
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          set -euo pipefail
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+          DEPLOY_SCRIPT=$(cat <<EOF
+          set -euo pipefail
+          test -f /etc/student-management/backend.env
+          aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
+          docker pull "${IMAGE_URI}"
+          docker stop "${CONTAINER_NAME}" || true
+          docker rm "${CONTAINER_NAME}" || true
+          docker run -d \
+            --name "${CONTAINER_NAME}" \
+            --restart always \
+            --env-file /etc/student-management/backend.env \
+            -p 127.0.0.1:8000:8080 \
+            "${IMAGE_URI}"
+          sleep 15
+          curl --fail --silent --show-error http://127.0.0.1:8000/api/health
+          nginx -t
+          systemctl restart nginx
+          systemctl is-active nginx
+          docker image prune -f
+          docker ps --filter "name=${CONTAINER_NAME}"
+          EOF
+          )
+
+          PARAMETERS=$(jq -n --arg script "$DEPLOY_SCRIPT" \
+            '{commands:["echo " + ($script | @base64) + " | base64 -d | sudo bash"]}')
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy student management backend ${IMAGE_TAG}" \
+            --parameters "$PARAMETERS" \
+            --query "Command.CommandId" \
+            --output text)
+
+          set +e
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$EC2_INSTANCE_ID"
+          WAIT_STATUS=$?
+          set -e
+
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query '{Status:Status,StandardOutput:StandardOutputContent,StandardError:StandardErrorContent}'
+
+          exit "$WAIT_STATUS"
