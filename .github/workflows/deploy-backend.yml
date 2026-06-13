@@ -99,7 +99,7 @@ jobs:
             -p 127.0.0.1:8000:8080 \
             "${IMAGE_URI}"
           HEALTHY=false
-          for attempt in $(seq 1 60); do
+          for attempt in \$(seq 1 60); do
             if curl --fail --silent --show-error http://127.0.0.1:8000/api/health; then
               HEALTHY=true
               break

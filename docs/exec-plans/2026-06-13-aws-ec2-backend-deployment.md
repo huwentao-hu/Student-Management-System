@@ -43,6 +43,7 @@
 - 第二次 GitHub Actions 已通过测试、OIDC、ECR 构建推送和 SSM 镜像拉取；固定 15 秒健康检查早于 Spring Boot 首次启动完成。
 - 健康检查已改为最多等待 120 秒，并在失败时输出容器日志。
 - 第三次 GitHub Actions 暴露 Actions 本地组装 SSM 脚本时的远端变量转义问题，已修正。
+- 第四次 GitHub Actions 暴露健康检查循环命令替换被 Actions 提前展开的问题，已修正。
 - 等待重新运行首次自动部署。
 
 ## 已创建 AWS 资源
