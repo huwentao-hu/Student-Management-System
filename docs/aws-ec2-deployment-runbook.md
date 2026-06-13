@@ -23,6 +23,8 @@ VPC: vpc-07a4d37cf359f18cf
 EC2 Security Group: sg-0f46592065cf59169
 RDS Security Group: sg-095667a2152dda46e
 RDS Endpoint: student-management-db.c1mkysoogwzv.ap-southeast-1.rds.amazonaws.com
+EC2 Instance ID: i-02f6c7536b1731823
+Elastic IP: 3.0.7.232
 ```
 
 如果主要访问者位于中国大陆，可在 AWS 控制台测试新加坡 `ap-southeast-1`、东京 `ap-northeast-1` 等区域的访问质量后选择。区域一旦确定，后续资源保持一致。
