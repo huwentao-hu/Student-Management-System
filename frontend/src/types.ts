@@ -25,6 +25,19 @@ export type Student = {
   updatedAt: string
 }
 
+export type StudentFormData = {
+  name: string
+  gender: string
+  dateOfBirth: string
+  phone: string
+  email: string
+  enrollmentDate: string
+}
+
+export type UpdateStudentData = StudentFormData & {
+  status: StudentStatus
+}
+
 export type Page<T> = {
   content: T[]
   page: number

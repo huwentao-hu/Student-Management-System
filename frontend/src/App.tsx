@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import {
-  BookOpen, CalendarDays, CheckCircle2, ChevronRight, ClipboardCheck, GraduationCap,
-  LayoutDashboard, LogOut, Menu, School, Search, Settings, TrendingUp, Users, X,
+  ArrowLeft, BookOpen, CalendarDays, CheckCircle2, ChevronRight, ClipboardCheck, Edit3,
+  GraduationCap, LayoutDashboard, LogOut, Mail, Menu, Phone, Plus, Save, School, Search,
+  Settings, TrendingUp, UserRound, Users, X,
 } from 'lucide-react'
-import { BrowserRouter, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, clearSession, loadSession, saveSession } from './api'
-import type { Role, Session, Student, StudentStatus } from './types'
+import type { Role, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
 import './App.css'
 
 const roleLabels: Record<Role, string> = { ADMIN: '管理员', TEACHER: '教师', STUDENT: '学生' }
@@ -137,6 +138,7 @@ function StudentList({ session }: { session: Session }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(true)
+      setError('')
       api.students(session, keyword, status).then((page) => setStudents(page.content))
         .catch((reason) => setError(reason instanceof Error ? reason.message : '学生数据加载失败'))
         .finally(() => setLoading(false))
@@ -145,13 +147,111 @@ function StudentList({ session }: { session: Session }) {
   }, [keyword, status, session])
 
   return <>
-    <section className="page-heading"><div><p className="eyebrow">学生档案</p><h1>学生管理</h1><p className="muted">查询学生基础信息与当前状态。</p></div><span className="date-chip">共 {students.length} 条当前结果</span></section>
+    <section className="page-heading"><div><p className="eyebrow">学生档案</p><h1>学生管理</h1><p className="muted">查询学生基础信息与当前状态。</p></div><div className="heading-actions"><span className="date-chip">共 {students.length} 条当前结果</span>{session.role === 'ADMIN' && <Link className="primary-link" to="/students/new"><Plus size={17} />新增学生</Link>}</div></section>
     <section className="panel">
       <div className="filters"><label className="search-box"><Search size={18} /><input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="搜索姓名或学号" /></label><select value={status} onChange={(e) => setStatus(e.target.value as StudentStatus | '')}><option value="">全部状态</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
       {error ? <div className="empty-state">{error}</div> : loading ? <div className="empty-state">正在加载学生数据...</div> : students.length === 0 ? <div className="empty-state">暂无符合条件的学生</div> :
-        <div className="table-wrap"><table><thead><tr><th>学生</th><th>学号</th><th>联系方式</th><th>入学日期</th><th>状态</th></tr></thead><tbody>{students.map((student) => <tr key={student.id}><td><strong>{student.name}</strong><small>{student.gender || '未填写性别'}</small></td><td>{student.studentNumber}</td><td>{student.phone || student.email || '—'}</td><td>{student.enrollmentDate || '—'}</td><td><span className={`status-badge ${student.status.toLowerCase()}`}>{statusLabels[student.status]}</span></td></tr>)}</tbody></table></div>}
+        <div className="table-wrap"><table><thead><tr><th>学生</th><th>学号</th><th>联系方式</th><th>入学日期</th><th>状态</th><th></th></tr></thead><tbody>{students.map((student) => <tr key={student.id}><td><strong>{student.name}</strong><small>{student.gender || '未填写性别'}</small></td><td>{student.studentNumber}</td><td>{student.phone || student.email || '—'}</td><td>{student.enrollmentDate || '—'}</td><td><span className={`status-badge ${student.status.toLowerCase()}`}>{statusLabels[student.status]}</span></td><td><Link className="row-link" to={`/students/${student.id}`}>查看<ChevronRight size={15} /></Link></td></tr>)}</tbody></table></div>}
     </section>
   </>
+}
+
+const emptyStudentForm: StudentFormData = {
+  name: '', gender: '', dateOfBirth: '', phone: '', email: '', enrollmentDate: '',
+}
+
+function StudentFormPage({ session, mode }: { session: Session, mode: 'create' | 'edit' }) {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [form, setForm] = useState<UpdateStudentData>({ ...emptyStudentForm, status: 'ACTIVE' })
+  const [studentNumber, setStudentNumber] = useState('')
+  const [loading, setLoading] = useState(mode === 'edit')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (mode !== 'edit' || !id) return
+    api.student(session, id).then((student) => {
+      setStudentNumber(student.studentNumber)
+      setForm({
+        name: student.name, gender: student.gender ?? '', dateOfBirth: student.dateOfBirth ?? '',
+        phone: student.phone ?? '', email: student.email ?? '', enrollmentDate: student.enrollmentDate ?? '',
+        status: student.status,
+      })
+    }).catch((reason) => setError(reason instanceof Error ? reason.message : '学生信息加载失败'))
+      .finally(() => setLoading(false))
+  }, [id, mode, session])
+
+  function field(name: keyof UpdateStudentData, value: string) {
+    setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      const student = mode === 'create'
+        ? await api.createStudent(session, form)
+        : await api.updateStudent(session, id!, form)
+      navigate(`/students/${student.id}`, { state: { saved: mode === 'create' ? '学生档案创建成功' : '学生档案更新成功' } })
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.message : '保存失败，请稍后重试')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return <div className="empty-state">正在加载学生信息...</div>
+
+  return <>
+    <section className="page-heading"><div><p className="eyebrow">{mode === 'create' ? '新建档案' : '编辑档案'}</p><h1>{mode === 'create' ? '新增学生' : '编辑学生'}</h1><p className="muted">{mode === 'create' ? '学号将在创建成功后由系统自动生成。' : `学号 ${studentNumber} 创建后不可修改。`}</p></div><Link className="secondary-link" to={mode === 'edit' ? `/students/${id}` : '/students'}><ArrowLeft size={17} />返回</Link></section>
+    <form className="panel student-form" onSubmit={submit}>
+      <div className="form-section"><div><p className="eyebrow">基础信息</p><h2>学生身份</h2></div><div className="form-grid">
+        <label className="wide">姓名 <span>*</span><input value={form.name} onChange={(e) => field('name', e.target.value)} maxLength={100} required /></label>
+        <label>性别<input value={form.gender} onChange={(e) => field('gender', e.target.value)} maxLength={16} placeholder="例如：男、女或 MALE" /></label>
+        <label>出生日期<input type="date" value={form.dateOfBirth} onChange={(e) => field('dateOfBirth', e.target.value)} max={new Date(Date.now() - 86400000).toISOString().slice(0, 10)} /></label>
+        <label>入学日期<input type="date" value={form.enrollmentDate} onChange={(e) => field('enrollmentDate', e.target.value)} /></label>
+        {mode === 'edit' && <label>当前状态<select value={form.status} onChange={(e) => field('status', e.target.value)}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}
+      </div></div>
+      <div className="form-section"><div><p className="eyebrow">联系信息</p><h2>联系方式</h2></div><div className="form-grid">
+        <label>手机号<input value={form.phone} onChange={(e) => field('phone', e.target.value)} maxLength={32} /></label>
+        <label>电子邮箱<input type="email" value={form.email} onChange={(e) => field('email', e.target.value)} maxLength={255} /></label>
+      </div></div>
+      {error && <p className="form-error form-message">{error}</p>}
+      <div className="form-actions"><Link className="secondary-link" to={mode === 'edit' ? `/students/${id}` : '/students'}>取消</Link><button className="primary-button compact" disabled={saving}><Save size={17} />{saving ? '正在保存...' : '保存学生档案'}</button></div>
+    </form>
+  </>
+}
+
+function StudentDetail({ session }: { session: Session }) {
+  const { id } = useParams()
+  const [student, setStudent] = useState<Student | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!id) return
+    api.student(session, id).then(setStudent)
+      .catch((reason) => setError(reason instanceof Error ? reason.message : '学生信息加载失败'))
+  }, [id, session])
+
+  if (error) return <div className="empty-state">{error}</div>
+  if (!student) return <div className="empty-state">正在加载学生信息...</div>
+
+  return <>
+    <section className="page-heading"><div><p className="eyebrow">学生详情</p><h1>{student.name}</h1><p className="muted">学号 {student.studentNumber}</p></div><div className="heading-actions"><Link className="secondary-link" to="/students"><ArrowLeft size={17} />返回列表</Link>{session.role === 'ADMIN' && <Link className="primary-link" to={`/students/${student.id}/edit`}><Edit3 size={16} />编辑档案</Link>}</div></section>
+    <section className="student-profile">
+      <article className="panel profile-card"><div className="profile-avatar"><UserRound size={34} /></div><h2>{student.name}</h2><span className={`status-badge ${student.status.toLowerCase()}`}>{statusLabels[student.status]}</span><dl><div><dt>学号</dt><dd>{student.studentNumber}</dd></div><div><dt>性别</dt><dd>{student.gender || '未填写'}</dd></div><div><dt>出生日期</dt><dd>{student.dateOfBirth || '未填写'}</dd></div><div><dt>入学日期</dt><dd>{student.enrollmentDate || '未填写'}</dd></div></dl></article>
+      <div className="profile-details">
+        <article className="panel detail-card"><p className="eyebrow">联系信息</p><h2>联系方式</h2><div className="detail-lines"><div><Phone size={18} /><span><small>手机号</small>{student.phone || '未填写'}</span></div><div><Mail size={18} /><span><small>电子邮箱</small>{student.email || '未填写'}</span></div></div></article>
+        <article className="panel detail-card"><p className="eyebrow">记录信息</p><h2>档案时间</h2><div className="detail-lines"><div><CalendarDays size={18} /><span><small>创建时间</small>{formatDateTime(student.createdAt)}</span></div><div><Edit3 size={18} /><span><small>最后更新</small>{formatDateTime(student.updatedAt)}</span></div></div></article>
+      </div>
+    </section>
+  </>
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
 function ModulePlaceholder({ title, description, icon }: { title: string, description: string, icon: ReactNode }) {
@@ -162,6 +262,9 @@ function ProtectedRoutes({ session, onLogout }: { session: Session, onLogout: ()
   return <AppShell session={session} onLogout={onLogout}><Routes>
     <Route path="/" element={<Dashboard session={session} />} />
     <Route path="/students" element={session.role === 'STUDENT' ? <Navigate to="/" /> : <StudentList session={session} />} />
+    <Route path="/students/new" element={session.role === 'ADMIN' ? <StudentFormPage session={session} mode="create" /> : <Navigate to="/students" />} />
+    <Route path="/students/:id" element={session.role === 'STUDENT' ? <Navigate to="/" /> : <StudentDetail session={session} />} />
+    <Route path="/students/:id/edit" element={session.role === 'ADMIN' ? <StudentFormPage session={session} mode="edit" /> : <Navigate to="/students" />} />
     <Route path="/classes" element={<ModulePlaceholder title="班级管理" description="管理班级、班主任与学生分班历史。" icon={<School />} />} />
     <Route path="/courses" element={<ModulePlaceholder title="课程管理" description="管理课程目录与学期开课安排。" icon={<BookOpen />} />} />
     <Route path="/timetable" element={<ModulePlaceholder title="学生课程表" description="按学年学期查看学生课程安排。" icon={<CalendarDays />} />} />

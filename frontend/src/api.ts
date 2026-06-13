@@ -1,4 +1,4 @@
-import type { Page, Session, Student, StudentStatus } from './types'
+import type { Page, Session, Student, StudentFormData, StudentStatus, UpdateStudentData } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '')
 const SESSION_KEY = 'student-management-session'
@@ -67,7 +67,33 @@ export const api = {
     if (status) params.set('status', status)
     return request<Page<Student>>(`/api/students?${params}`, {}, session)
   },
+  student(session: Session, id: string) {
+    return request<Student>(`/api/students/${id}`, {}, session)
+  },
+  createStudent(session: Session, data: StudentFormData) {
+    return request<Student>('/api/students', {
+      method: 'POST',
+      body: JSON.stringify(normalizeStudentData(data)),
+    }, session)
+  },
+  updateStudent(session: Session, id: string, data: UpdateStudentData) {
+    return request<Student>(`/api/students/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ ...normalizeStudentData(data), status: data.status }),
+    }, session)
+  },
   pageCount(session: Session, resource: string) {
     return request<Page<unknown>>(`/api/${resource}?page=0&size=1`, {}, session)
   },
+}
+
+function normalizeStudentData(data: StudentFormData) {
+  return {
+    name: data.name.trim(),
+    gender: data.gender.trim() || null,
+    dateOfBirth: data.dateOfBirth || null,
+    phone: data.phone.trim() || null,
+    email: data.email.trim() || null,
+    enrollmentDate: data.enrollmentDate || null,
+  }
 }
